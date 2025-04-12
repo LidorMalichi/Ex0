@@ -1,3 +1,8 @@
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class represents Solution for Ex0 at Aerospace Engineering Course at Ariel University.
  */
@@ -23,33 +28,57 @@ public class Bereshit_101 {
         return t / weight;
     }
 
+    // Data container for CSV export
+    static class LandingSnapshot {
+        double time, vs, hs, dist, alt, ang, fuel, acc;
+
+        public LandingSnapshot(double time, double vs, double hs, double dist,
+                               double alt, double ang, double fuel, double acc) {
+            this.time = time;
+            this.vs = vs;
+            this.hs = hs;
+            this.dist = dist;
+            this.alt = alt;
+            this.ang = ang;
+            this.fuel = fuel;
+            this.acc = acc;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%.2f,%.6f,%.6f,%.2f,%.6f,%.6f,%.6f,%.6f",
+                    time, vs, hs, dist, alt, ang, fuel, acc);
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("Simulating Bereshit's Landing with Interpolation:");
 
         double vs = 24.8;
         double hs = 932;
         double dist = 181 * 1000;
-        double ang = 58.3; // zero is vertical (as in landing)
-        double alt = 13748; // 2:25:40 (as in the simulation) // https://www.youtube.com/watch?v=JJ0VfRL9AMs
+        double ang = 58.3;
+        double alt = 13748;
         double time = 0;
-        double dt = 1; // sec
-        double acc = 0; // Acceleration rate (m/s^2)
-        double fuel = 121; //
+        double dt = 1;
+        double acc = 0;
+        double fuel = 121;
         double weight = WEIGHT_EMP + fuel;
+
         System.out.println("time, vs, hs, dist, alt, ang, fuel, acc");
 
-        //PID Controllers Vertical Speed, Angle.
-        PID vsController = new PID(0.2, 0.00005, 0.3, 0.5);
-        PID angleController = new PID(0.06, 0.00004, 0.2, 0.5);
+        PID vsController = new PID(0.03, 0.00002, 0.5, 0.5);
+        PID angleController = new PID(0.03, 0.00002, 0.4, 0.5);
 
-        // --- Interpolators for Angle and Vertical Speed
         double[] altitudes_vs = {0, 5, 20, 50, 100, 500, 2000, 4000};
         double[] vs_targets =  {0, 1, 2, 4, 6, 12, 20, 30};
         LinearInterpolator vsInterp = new LinearInterpolator(altitudes_vs, vs_targets);
 
-        double[] altitudes_ang = {50, 100, 200, 500, 1500};
+        double[] altitudes_ang = {50, 100, 200, 500 ,1500};
         double[] angle_targets = {0, 20, 25, 40, 58.3};
         LinearInterpolator angleInterp = new LinearInterpolator(altitudes_ang, angle_targets);
+
+        List<LandingSnapshot> report = new ArrayList<>();
 
         double NN = 0.7;
         while (alt > 0) {
@@ -58,27 +87,44 @@ public class Bereshit_101 {
                         time, vs, hs, dist, alt, ang, fuel, acc);
             }
 
+            // Save current state to report
+            report.add(new LandingSnapshot(time, vs, hs, dist, alt, ang, fuel, acc));
 
-            //Change Angle Pid Values To handle Landing
-            if(alt<100){
+            /*
+            PID Adjustments based on Altitude
+             */
+
+            if (alt < 2000) {
+                vsController.Set_P(0.05);
+                vsController.Set_I(0.00003);
+                vsController.Set_D(0.3);
+
+            }
+
+            if (alt < 500) {
+                vsController.Set_P(0.06);
+                vsController.Set_I(0.00005);
+                vsController.Set_D(0.25);
+
+                angleController.Set_P(0.05);
+                angleController.Set_I(0.00004);
+                angleController.Set_D(0.2);
+            }
+
+            if (alt < 100) {
                 angleController.Set_P(0.08);
                 angleController.Set_I(0.00007);
                 angleController.Set_D(0.4);
             }
 
-            // Use interpolators
             double target_vs = vsInterp.interpolate(alt);
             double target_angle = angleInterp.interpolate(alt);
-
-            // Use Vertical Speed PID
             double vs_pid_output = vsController.update(vs - target_vs, dt);
             NN = Math.max(0, Math.min(NN + vs_pid_output, 1));
 
-            // Use Angle PID
             double angle_error = ang - target_angle;
             double angle_pid_output = angleController.update(angle_error, dt);
 
-            // Until 2000 alt keep 58.3
             if (alt < 2000) {
                 ang = Math.max(0, Math.min(ang - angle_pid_output, 60));
             }
@@ -87,7 +133,6 @@ public class Bereshit_101 {
                 hs = 0;
             }
 
-            // Motion physics
             double ang_rad = Math.toRadians(ang);
             double h_acc = Math.sin(ang_rad) * acc;
             double v_acc = Math.cos(ang_rad) * acc;
@@ -108,6 +153,17 @@ public class Bereshit_101 {
             dist -= hs * dt;
             vs -= v_acc * dt;
             alt -= dt * vs;
+        }
+
+        // Export to CSV
+        try (FileWriter writer = new FileWriter("landing_report.csv")) {
+            writer.write("time,vs,hs,dist,alt,ang,fuel,acc\n");
+            for (LandingSnapshot snap : report) {
+                writer.write(snap + "\n");
+            }
+            System.out.println("Final landing report saved to landing_report.csv");
+        } catch (IOException e) {
+            System.err.println("Failed to write CSV report: " + e.getMessage());
         }
     }
 }
