@@ -52,6 +52,7 @@ To run the script, use the following command in your terminal:
 python plot_landing.py
 
 View the Results:
+
 After running the script, it will generate a plot showing 5 graphs of the simulation's key metrics: altitude, vertical speed, horizontal speed, angle, and fuel. The plot will be saved as 
 
 bereshit_landing.png in the current directory.
