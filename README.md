@@ -10,15 +10,13 @@ The simulation uses PID controllers to adjust the vertical speed and angle based
 
 #### Simulation of Landing: The physics of the landing are modeled, adjusting for fuel consumption, acceleration, and descent speed.
 
-#### PID Controllers: Two PID controllers are used to control the vertical speed and the angle during the descent. 
+#### CSV Export: The simulation results are saved in a CSV file for further analysis.
 
 #### Data Visualization: The simulation data is visualized with 5 plots to help analyze the landing process.
 
-#### CSV Export: The simulation results are saved in a CSV file for further analysis.
-
 ## Technical Report:
 
-A Technical Report has been added to analyze the crash of the Bereshit spacecraft, providing a detailed breakdown of the incident. The report also outlines the simulation used to model the landing sequence, the assumptions made during the simulation, and the results obtained from various parameters such as altitude, vertical speed, horizontal speed, angle, and fuel consumption. Through this simulation, we aim to identify the factors contributing to the crash, further explaining both the methodology of our simulation and the insights gained from our results.
+A Technical Report has been added to analyze the crash of the Bereshit spacecraft, providing a detailed breakdown of the incident. The report also outlines the simulation used to model the landing sequence, the assumptions made during the simulation, and the results obtained from various parameters such as altitude, vertical speed, horizontal speed, angle, and fuel consumption. Through this simulation, we aim to identify the factors contributing to the crash, further explaining both the methodology of our simulation.
 
 
 
