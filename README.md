@@ -6,12 +6,6 @@ This project simulates the landing of the Bereshit spacecraft, designed as part 
 
 The simulation uses PID controllers to adjust the vertical speed and angle based on altitude, and it tracks the fuel consumption over time. The output data is stored in a CSV file and visualized using Python's matplotlib and seaborn libraries.
 
-## Features
-
-#### Simulation of Landing: The physics of the landing are modeled, adjusting for fuel consumption, acceleration, and descent speed.
-
-#### CSV Export: The simulation results are saved in a CSV file for further analysis.
-
 
 ## Technical Report:
 
